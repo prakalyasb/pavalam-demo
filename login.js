@@ -48,59 +48,82 @@ toggle.addEventListener("click", function () {
 // ================================
 
 document.getElementById("loginForm")
-.addEventListener("submit", function (e) {
+.addEventListener("submit", async function (e) {
 
     e.preventDefault();
 
-    const username =
+    const email =
         document.getElementById("username").value.trim();
 
-    const passwordValue =
+    const password =
         document.getElementById("password").value.trim();
 
     const remember =
         document.querySelector("input[type='checkbox']").checked;
 
-    if (username === "" || passwordValue === "") {
+    if (email === "" || password === "") {
 
         alert("Please fill in all fields.");
-
         return;
 
     }
 
-    // Demo Login Credentials
-    // Username: admin
-    // Password: admin123
+    try {
 
-    if (username === "admin" &&
-        passwordValue === "admin123") {
+        const response = await fetch(
+            "http://localhost:5000/api/users/login",
+            {
+                method: "POST",
 
-        if (remember) {
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-            localStorage.setItem("username", username);
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            if (remember) {
+
+                localStorage.setItem("username", email);
+
+            } else {
+
+                localStorage.removeItem("username");
+
+            }
+
+            localStorage.setItem(
+                "loggedInUser",
+                JSON.stringify(data.user)
+            );
+
+            alert("Login Successful!");
+
+            window.location.href = "index.html";
 
         }
 
         else {
 
-            localStorage.removeItem("username");
+            alert(data.message);
 
         }
 
-        alert("Login Successful!\nWelcome to Pavalam Industries.");
-
-        setTimeout(function () {
-
-            window.location.href = "index.html";
-
-        }, 500);
-
     }
 
-    else {
+    catch (error) {
 
-        alert("Invalid Username or Password!");
+        console.error(error);
+
+        alert("Unable to connect to server.");
 
     }
 
